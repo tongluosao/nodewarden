@@ -144,6 +144,7 @@ function normalizeWebDavDestination(value: unknown, allowIncomplete = false): We
   const username = asTrimmedString(source.username);
   const password = String(source.password ?? '');
   const remotePath = normalizePath(source.remotePath);
+  const wakeOnUnavailable = source.wakeOnUnavailable === true;
 
   if (!allowIncomplete || baseUrl) {
     if (!baseUrl) throw new Error('WebDAV server URL is required');
@@ -161,6 +162,7 @@ function normalizeWebDavDestination(value: unknown, allowIncomplete = false): We
     username,
     password,
     remotePath,
+    wakeOnUnavailable,
   };
 }
 

@@ -327,7 +327,9 @@ async function executeConfiguredBackup(
         ? 'txt_backup_remote_run_progress_sync_attachments_detail'
         : 'txt_backup_remote_run_progress_sync_attachments_skipped_detail',
     });
-    const remoteSession = createRemoteBackupTransferSession(destination);
+    const remoteSession = createRemoteBackupTransferSession(destination, {
+      wakeWebDavOnUnavailable: true,
+    });
     if (destination.includeAttachments) {
       await touchLease();
       const remoteAttachmentIndex = await loadRemoteAttachmentIndex(remoteSession);

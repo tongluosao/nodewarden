@@ -6,6 +6,9 @@ interface BackupIncludeAttachmentsFieldProps {
   disabled?: boolean;
   showHelp?: boolean;
   showLabel?: boolean;
+  labelKey?: string;
+  helpButtonKey?: string;
+  helpKey?: string;
   onChange: (checked: boolean) => void;
 }
 
@@ -35,21 +38,21 @@ export function BackupIncludeAttachmentsField(props: BackupIncludeAttachmentsFie
           disabled={props.disabled}
           onInput={(event) => props.onChange((event.currentTarget as HTMLInputElement).checked)}
         />
-        {props.showLabel !== false ? <span>{t('txt_backup_include_attachments')}</span> : null}
+        {props.showLabel !== false ? <span>{t(props.labelKey || 'txt_backup_include_attachments')}</span> : null}
       </label>
       {props.showHelp !== false ? (
         <div ref={wrapRef} className={`backup-help-wrap ${open ? 'open' : ''}`}>
           <button
             type="button"
             className="backup-help-trigger"
-            aria-label={t('txt_backup_include_attachments_help_button')}
+            aria-label={t(props.helpButtonKey || 'txt_backup_include_attachments_help_button')}
             aria-expanded={open ? 'true' : 'false'}
             onClick={() => setOpen((current) => !current)}
           >
             ?
           </button>
           <div className="backup-help-bubble" role="tooltip">
-            {t('txt_backup_include_attachments_help')}
+            {t(props.helpKey || 'txt_backup_include_attachments_help')}
           </div>
         </div>
       ) : null}

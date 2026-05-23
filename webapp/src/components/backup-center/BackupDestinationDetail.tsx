@@ -396,6 +396,22 @@ export function BackupDestinationDetail(props: BackupDestinationDetailProps) {
                   }))}
                 />
               </label>
+              <div className="field field-span-2">
+                <BackupIncludeAttachmentsField
+                  checked={(props.selectedDestination.destination as WebDavBackupDestination).wakeOnUnavailable === true}
+                  disabled={props.loadingSettings || props.disableWhileBusy}
+                  labelKey="txt_backup_webdav_wake_on_unavailable"
+                  helpButtonKey="txt_backup_webdav_wake_on_unavailable_help_button"
+                  helpKey="txt_backup_webdav_wake_on_unavailable_help"
+                  onChange={(checked) => props.onUpdateDestination((destination) => ({
+                    ...destination,
+                    destination: {
+                      ...(destination.destination as WebDavBackupDestination),
+                      wakeOnUnavailable: checked,
+                    },
+                  }))}
+                />
+              </div>
             </div>
           ) : null}
 

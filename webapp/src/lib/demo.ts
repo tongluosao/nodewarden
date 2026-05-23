@@ -553,6 +553,7 @@ export const DEMO_BACKUP_SETTINGS: AdminBackupSettings = {
         username: 'demo-backup',
         password: 'demo-password',
         remotePath: 'nodewarden',
+        wakeOnUnavailable: false,
       },
       schedule: {
         enabled: true,

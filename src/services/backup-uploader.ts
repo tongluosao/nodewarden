@@ -37,6 +37,10 @@ export interface RemoteBackupFilePutOptions {
   contentType?: string;
 }
 
+const WEBDAV_WAKE_PROBE_TIMEOUT_MS = 5_000;
+const WEBDAV_WAKE_REQUEST_TIMEOUT_MS = 10_000;
+const WEBDAV_WAKE_DELAY_MS = 30_000;
+
 function isBackupArchiveName(name: string): boolean {
   return /\.zip$/i.test(String(name || '').trim());
 }
@@ -150,6 +154,66 @@ async function hmacSha256Raw(keyBytes: Uint8Array, message: string): Promise<Uin
 function toBasicAuthHeader(username: string, password: string): string {
   const token = btoa(`${username}:${password}`);
   return `Basic ${token}`;
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs: number): Promise<Response> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort('timeout'), timeoutMs);
+  try {
+    return await fetch(url, {
+      ...init,
+      signal: controller.signal,
+    });
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+function isRemoteWakeRequiredStatus(status: number): boolean {
+  return status === 408 || status === 425 || status === 429 || status >= 500;
+}
+
+function isRemoteProbeAvailable(response: Response): boolean {
+  return !isRemoteWakeRequiredStatus(response.status);
+}
+
+async function warmWebDavIfNeeded(config: WebDavBackupDestination): Promise<void> {
+  const authHeader = toBasicAuthHeader(config.username, config.password);
+  const probeUrl = buildWebDavUrl(config.baseUrl, config.remotePath);
+  let shouldWake = false;
+
+  try {
+    const response = await fetchWithTimeout(probeUrl, {
+      method: 'HEAD',
+      headers: {
+        Authorization: authHeader,
+      },
+    }, WEBDAV_WAKE_PROBE_TIMEOUT_MS);
+    shouldWake = !isRemoteProbeAvailable(response);
+  } catch {
+    shouldWake = true;
+  }
+
+  if (!shouldWake) return;
+
+  const wakeUrl = new URL(config.baseUrl).origin;
+  try {
+    await fetchWithTimeout(wakeUrl, {
+      method: 'GET',
+      headers: {
+        'Cache-Control': 'no-store',
+      },
+    }, WEBDAV_WAKE_REQUEST_TIMEOUT_MS);
+  } catch {
+    // The wake request only needs to reach Render. Cold starts often outlive this
+    // short client-side timeout, so continue with the configured grace period.
+  }
+
+  await sleep(WEBDAV_WAKE_DELAY_MS);
 }
 
 function buildCanonicalQueryString(url: URL): string {
@@ -649,6 +713,10 @@ export interface RemoteBackupTransferSession {
   exists(relativePath: string): Promise<boolean>;
 }
 
+export interface RemoteBackupTransferSessionOptions {
+  wakeWebDavOnUnavailable?: boolean;
+}
+
 function resolveConfiguredDestinationAdapter(
   destination: BackupDestinationRecord
 ): ConfiguredDestinationAdapter {
@@ -682,12 +750,27 @@ function resolveConfiguredDestinationAdapter(
   throw new Error('Unsupported backup destination type');
 }
 
-export function createRemoteBackupTransferSession(destination: BackupDestinationRecord): RemoteBackupTransferSession {
+export function createRemoteBackupTransferSession(
+  destination: BackupDestinationRecord,
+  options: RemoteBackupTransferSessionOptions = {}
+): RemoteBackupTransferSession {
   const adapter = resolveConfiguredDestinationAdapter(destination);
   const ensuredDirectories = adapter.provider === 'webdav' ? new Set<string>() : null;
+  let webDavWarmup: Promise<void> | null = null;
+
+  const warmRemoteIfNeeded = async (): Promise<void> => {
+    if (adapter.provider !== 'webdav') return;
+    if (!options.wakeWebDavOnUnavailable) return;
+    if (!(adapter.config as WebDavBackupDestination).wakeOnUnavailable) return;
+    if (!webDavWarmup) {
+      webDavWarmup = warmWebDavIfNeeded(adapter.config as WebDavBackupDestination);
+    }
+    await webDavWarmup;
+  };
 
   const putFile = async (relativePath: string, bytes: Uint8Array, options: RemoteBackupFilePutOptions = {}): Promise<void> => {
     const normalized = normalizeRelativePath(relativePath);
+    await warmRemoteIfNeeded();
     if (adapter.provider === 'webdav' && ensuredDirectories) {
       await putToWebDav(adapter.config as WebDavBackupDestination, normalized, bytes, options, ensuredDirectories);
       return;
@@ -707,10 +790,22 @@ export function createRemoteBackupTransferSession(destination: BackupDestination
       };
     },
     putFile,
-    list: async (relativePath: string) => adapter.list(adapter.config, relativePath),
-    download: async (relativePath: string) => adapter.download(adapter.config, relativePath),
-    deleteFile: async (relativePath: string) => adapter.deleteFile(adapter.config, normalizeRelativePath(relativePath)),
-    exists: async (relativePath: string) => adapter.exists(adapter.config, normalizeRelativePath(relativePath)),
+    list: async (relativePath: string) => {
+      await warmRemoteIfNeeded();
+      return adapter.list(adapter.config, relativePath);
+    },
+    download: async (relativePath: string) => {
+      await warmRemoteIfNeeded();
+      return adapter.download(adapter.config, relativePath);
+    },
+    deleteFile: async (relativePath: string) => {
+      await warmRemoteIfNeeded();
+      return adapter.deleteFile(adapter.config, normalizeRelativePath(relativePath));
+    },
+    exists: async (relativePath: string) => {
+      await warmRemoteIfNeeded();
+      return adapter.exists(adapter.config, normalizeRelativePath(relativePath));
+    },
   };
 }
 

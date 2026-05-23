@@ -29,6 +29,7 @@ export interface WebDavBackupDestination {
   username: string;
   password: string;
   remotePath: string;
+  wakeOnUnavailable: boolean;
 }
 
 export type BackupDestinationConfig =
@@ -114,6 +115,7 @@ export function createDefaultBackupDestinationConfig(type: BackupDestinationType
     username: '',
     password: '',
     remotePath: BACKUP_DEFAULT_REMOTE_PATH,
+    wakeOnUnavailable: false,
   };
 }
 
