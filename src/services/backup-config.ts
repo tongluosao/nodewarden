@@ -141,6 +141,7 @@ function normalizeS3Destination(value: unknown, allowIncomplete = false): S3Back
 function normalizeWebDavDestination(value: unknown, allowIncomplete = false): WebDavBackupDestination {
   const source = isPlainObject(value) ? value : {};
   const baseUrl = asTrimmedString(source.baseUrl);
+  const wakeUrl = asTrimmedString(source.wakeUrl);
   const username = asTrimmedString(source.username);
   const password = String(source.password ?? '');
   const remotePath = normalizePath(source.remotePath);
@@ -149,6 +150,9 @@ function normalizeWebDavDestination(value: unknown, allowIncomplete = false): We
   if (!allowIncomplete || baseUrl) {
     if (!baseUrl) throw new Error('WebDAV server URL is required');
     if (!/^https?:\/\//i.test(baseUrl)) throw new Error('WebDAV server URL must start with http:// or https://');
+  }
+  if (wakeUrl && !/^https?:\/\//i.test(wakeUrl)) {
+    throw new Error('WebDAV wake URL must start with http:// or https://');
   }
   if (!allowIncomplete || username) {
     if (!username) throw new Error('WebDAV username is required');
@@ -159,6 +163,7 @@ function normalizeWebDavDestination(value: unknown, allowIncomplete = false): We
 
   return {
     baseUrl: baseUrl ? baseUrl.replace(/\/+$/, '') : '',
+    wakeUrl: wakeUrl ? wakeUrl.replace(/\/+$/, '') : '',
     username,
     password,
     remotePath,

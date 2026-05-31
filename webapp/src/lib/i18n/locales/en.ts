@@ -251,6 +251,7 @@ const en: Record<string, string> = {
   "txt_backup_webdav_wake_on_unavailable": "Wake remote service before backup",
   "txt_backup_webdav_wake_on_unavailable_help_button": "Remote wake help",
   "txt_backup_webdav_wake_on_unavailable_help": "Before a WebDAV backup starts, NodeWarden checks whether the remote service responds. If it appears unavailable, NodeWarden sends a wake request to the same origin, waits about 30 seconds, then continues the backup. Useful for Render free services, including custom domains.",
+  "txt_backup_webdav_wake_url": "Wake URL",
   "txt_backup_enable_schedule": "Enable automatic daily backup",
   "txt_backup_schedule_note": "The worker checks the schedule every 5 minutes. It starts at the selected time in the selected timezone, then repeats by the chosen hour interval, and resets from that start time each day.",
   "txt_backup_schedule_disabled": "Disabled",

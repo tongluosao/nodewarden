@@ -550,6 +550,7 @@ export const DEMO_BACKUP_SETTINGS: AdminBackupSettings = {
       includeAttachments: true,
       destination: {
         baseUrl: 'https://dav.example.com/nodewarden',
+        wakeUrl: '',
         username: 'demo-backup',
         password: 'demo-password',
         remotePath: 'nodewarden',

@@ -251,6 +251,7 @@ const zhCN: Record<string, string> = {
   "txt_backup_webdav_wake_on_unavailable": "备份前唤醒远端服务",
   "txt_backup_webdav_wake_on_unavailable_help_button": "远端唤醒说明",
   "txt_backup_webdav_wake_on_unavailable_help": "WebDAV 备份开始前，NodeWarden 会先检查远端服务是否响应。若看起来不可用，会向同源地址发送一次唤醒请求，等待约 30 秒后继续备份。适合 Render 免费服务，也支持自定义域名。",
+  "txt_backup_webdav_wake_url": "唤醒地址",
   "txt_backup_enable_schedule": "启用每日自动备份",
   "txt_backup_schedule_note": "Worker 每 5 分钟检查一次计划。会先按你选择的时区和开始时间起跑，再按小时间隔继续执行；到了下一天，会重新从开始时间开始。",
   "txt_backup_schedule_disabled": "未启用",

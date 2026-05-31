@@ -251,6 +251,7 @@ const es: Record<string, string> = {
   "txt_backup_webdav_wake_on_unavailable": "Despertar servicio remoto antes de copiar",
   "txt_backup_webdav_wake_on_unavailable_help_button": "Ayuda de activación remota",
   "txt_backup_webdav_wake_on_unavailable_help": "Antes de iniciar una copia WebDAV, NodeWarden comprueba si el servicio remoto responde. Si parece no disponible, envía una solicitud de activación al mismo origen, espera unos 30 segundos y continúa. Útil para servicios gratuitos de Render, incluidos dominios personalizados.",
+  "txt_backup_webdav_wake_url": "URL de activación",
   "txt_backup_enable_schedule": "Activar copia de seguridad automática diaria",
   "txt_backup_schedule_note": "El worker verifica la programación cada 5 minutos. Comienza a la hora seleccionada en la zona horaria seleccionada, luego se repite según el intervalo de horas elegido y se reinicia desde esa hora de inicio cada día.",
   "txt_backup_schedule_disabled": "Desactivado",

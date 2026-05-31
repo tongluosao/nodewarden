@@ -26,6 +26,7 @@ export interface S3BackupDestination {
 
 export interface WebDavBackupDestination {
   baseUrl: string;
+  wakeUrl: string;
   username: string;
   password: string;
   remotePath: string;
@@ -112,6 +113,7 @@ export function createDefaultBackupDestinationConfig(type: BackupDestinationType
   }
   return {
     baseUrl: '',
+    wakeUrl: '',
     username: '',
     password: '',
     remotePath: BACKUP_DEFAULT_REMOTE_PATH,

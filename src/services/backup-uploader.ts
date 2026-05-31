@@ -203,12 +203,11 @@ async function warmWebDavIfNeeded(config: WebDavBackupDestination): Promise<void
 
   if (!shouldWake) return;
 
-  const wakeUrl = buildWebDavUrl(config.baseUrl, '');
+  const wakeUrl = String(config.wakeUrl || '').trim() || buildWebDavUrl(config.baseUrl, '');
   try {
     await fetchWithTimeout(wakeUrl, {
-      method: 'GET',
+      method: 'HEAD',
       headers: {
-        Authorization: authHeader,
         'Cache-Control': 'no-store',
       },
     }, WEBDAV_WAKE_REQUEST_TIMEOUT_MS);

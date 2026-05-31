@@ -396,6 +396,22 @@ export function BackupDestinationDetail(props: BackupDestinationDetailProps) {
                   }))}
                 />
               </label>
+              <label className="field field-span-2">
+                <span>{t('txt_backup_webdav_wake_url')}</span>
+                <input
+                  className="input"
+                  value={(props.selectedDestination.destination as WebDavBackupDestination).wakeUrl || ''}
+                  disabled={props.loadingSettings || props.disableWhileBusy}
+                  placeholder="https://example.com"
+                  onInput={(event) => props.onUpdateDestination((destination) => ({
+                    ...destination,
+                    destination: {
+                      ...(destination.destination as WebDavBackupDestination),
+                      wakeUrl: (event.currentTarget as HTMLInputElement).value,
+                    },
+                  }))}
+                />
+              </label>
               <div className="field field-span-2">
                 <BackupIncludeAttachmentsField
                   checked={(props.selectedDestination.destination as WebDavBackupDestination).wakeOnUnavailable === true}

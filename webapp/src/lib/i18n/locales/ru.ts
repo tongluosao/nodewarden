@@ -251,6 +251,7 @@ const ru: Record<string, string> = {
   "txt_backup_webdav_wake_on_unavailable": "Разбудить удаленный сервис перед копией",
   "txt_backup_webdav_wake_on_unavailable_help_button": "Справка по пробуждению сервиса",
   "txt_backup_webdav_wake_on_unavailable_help": "Перед запуском резервной копии WebDAV NodeWarden проверяет, отвечает ли удаленный сервис. Если он выглядит недоступным, NodeWarden отправляет запрос пробуждения на тот же origin, ждет около 30 секунд и продолжает. Полезно для бесплатных сервисов Render, включая пользовательские домены.",
+  "txt_backup_webdav_wake_url": "URL для пробуждения",
   "txt_backup_enable_schedule": "Включить автоматическое ежедневное резервное копирование",
   "txt_backup_schedule_note": "Работник проверяет расписание каждые 5 минут. Он начинается в выбранное время в выбранном часовом поясе, затем повторяется с выбранным часовым интервалом и сбрасывается с этого времени каждый день.",
   "txt_backup_schedule_disabled": "Отключено",
