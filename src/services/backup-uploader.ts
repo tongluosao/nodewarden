@@ -38,7 +38,7 @@ export interface RemoteBackupFilePutOptions {
 }
 
 const WEBDAV_WAKE_PROBE_TIMEOUT_MS = 5_000;
-const WEBDAV_WAKE_REQUEST_TIMEOUT_MS = 10_000;
+const WEBDAV_WAKE_REQUEST_TIMEOUT_MS = 30_000;
 const WEBDAV_WAKE_DELAY_MS = 30_000;
 
 function isBackupArchiveName(name: string): boolean {
@@ -174,7 +174,7 @@ async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs: numbe
 }
 
 function isRemoteWakeRequiredStatus(status: number): boolean {
-  return status === 408 || status === 425 || status === 429 || status >= 500;
+  return status === 408 || status === 425 || status >= 500;
 }
 
 function isRemoteProbeAvailable(response: Response): boolean {
@@ -185,6 +185,7 @@ async function warmWebDavIfNeeded(config: WebDavBackupDestination): Promise<void
   const authHeader = toBasicAuthHeader(config.username, config.password);
   const probeUrl = buildWebDavUrl(config.baseUrl, config.remotePath);
   let shouldWake = false;
+  let wakeStartedAt = 0;
 
   try {
     const response = await fetchWithTimeout(probeUrl, {
@@ -200,11 +201,13 @@ async function warmWebDavIfNeeded(config: WebDavBackupDestination): Promise<void
 
   if (!shouldWake) return;
 
-  const wakeUrl = new URL(config.baseUrl).origin;
+  const wakeUrl = buildWebDavUrl(config.baseUrl, '');
   try {
+    wakeStartedAt = Date.now();
     await fetchWithTimeout(wakeUrl, {
       method: 'GET',
       headers: {
+        Authorization: authHeader,
         'Cache-Control': 'no-store',
       },
     }, WEBDAV_WAKE_REQUEST_TIMEOUT_MS);
@@ -213,7 +216,10 @@ async function warmWebDavIfNeeded(config: WebDavBackupDestination): Promise<void
     // short client-side timeout, so continue with the configured grace period.
   }
 
-  await sleep(WEBDAV_WAKE_DELAY_MS);
+  const elapsedMs = wakeStartedAt ? Date.now() - wakeStartedAt : 0;
+  if (elapsedMs < WEBDAV_WAKE_DELAY_MS) {
+    await sleep(WEBDAV_WAKE_DELAY_MS - elapsedMs);
+  }
 }
 
 function buildCanonicalQueryString(url: URL): string {
